@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import api from '../services/api'
 
-function Login() {
+function Login({ setToken }) {
     const navigate = useNavigate()
     const [formData, setFormData] = useState({ email: '', password: '' })
     const [error, setError] = useState(null)
@@ -20,6 +20,7 @@ function Login() {
         try {
             const response = await api.post('/auth/login', formData)
             localStorage.setItem('token', response.data.token)
+            setToken(response.data.token)
             navigate('/dashboard')
         } catch (err) {
             setError(err.response?.data?.message || 'Error al iniciar sesión')

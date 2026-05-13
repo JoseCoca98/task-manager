@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import api from '../services/api'
 
-function Register() {
+function Register({ setToken }) {
     const navigate = useNavigate()
     const [formData, setFormData] = useState({ name: '', email: '', password: '' })
     const [error, setError] = useState(null)
@@ -20,6 +20,7 @@ function Register() {
         try {
             const response = await api.post('/auth/register', formData)
             localStorage.setItem('token', response.data.token)
+            setToken(response.data.token)
             navigate('/dashboard')
         } catch (err) {
             setError(err.response?.data?.message || 'Error al registrarse')
