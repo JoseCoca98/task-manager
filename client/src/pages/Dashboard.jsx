@@ -1,0 +1,209 @@
+import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
+import api from '../services/api'
+
+function Dashboard() {
+    const navigate = useNavigate()
+    const [tasks, setTasks] = useState([])
+    const [loading, setLoading] = useState(true)
+    const [error, setError] = useState(null)
+    const [newTask, setNewTask] = useState({ title: '', description: '', priority: 'MEDIUM' })
+    const [showForm, setShowForm] = useState(false)
+
+    useEffect(() => {
+        fetchTasks()
+    }, [])
+
+    const fetchTasks = async () => {
+        try {
+            const response = await api.get('/tasks')
+            setTasks(response.data)
+        } catch (err) {
+            setError('Error al cargar las tareas')
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    const handleCreateTask = async (e) => {
+        e.preventDefault()
+        try {
+            const response = await api.post('/tasks', newTask)
+            setTasks([...tasks, response.data])
+            setNewTask({ title: '', description: '', priority: 'MEDIUM' })
+            setShowForm(false)
+        } catch (err) {
+            setError('Error al crear la tarea')
+        }
+    }
+
+    const handleStatusChange = async (task) => {
+        const nextStatus = {
+            PENDING: 'IN_PROGRESS',
+            IN_PROGRESS: 'COMPLETED',
+            COMPLETED: 'PENDING'
+        }
+        try {
+            const response = await api.put(`/tasks/${task.id}`, {
+                ...task,
+                status: nextStatus[task.status]
+            })
+            setTasks(tasks.map(t => t.id === task.id ? response.data : t))
+        } catch (err) {
+            setError('Error al actualizar la tarea')
+        }
+    }
+
+    const handleDeleteTask = async (id) => {
+        try {
+            await api.delete(`/tasks/${id}`)
+            setTasks(tasks.filter(t => t.id !== id))
+        } catch (err) {
+            setError('Error al eliminar la tarea')
+        }
+    }
+
+    const handleLogout = () => {
+        localStorage.removeItem('token')
+        navigate('/login')
+    }
+
+    const statusLabel = {
+        PENDING: 'Pendiente',
+        IN_PROGRESS: 'En progreso',
+        COMPLETED: 'Completada'
+    }
+
+    const statusColor = {
+        PENDING: 'bg-yellow-100 text-yellow-800',
+        IN_PROGRESS: 'bg-blue-100 text-blue-800',
+        COMPLETED: 'bg-green-100 text-green-800'
+    }
+
+    const priorityColor = {
+        LOW: 'bg-gray-100 text-gray-800',
+        MEDIUM: 'bg-orange-100 text-orange-800',
+        HIGH: 'bg-red-100 text-red-800'
+    }
+
+    return (
+        <div className="min-h-screen bg-gray-100">
+            {/* Navbar */}
+            <nav className="bg-white shadow px-6 py-4 flex justify-between items-center">
+                <h1 className="text-xl font-bold text-gray-800">📝 Task Manager</h1>
+                <button
+                    onClick={handleLogout}
+                    className="text-gray-600 hover:text-red-500"
+                >
+                    Cerrar sesión
+                </button>
+            </nav>
+
+            <div className="max-w-3xl mx-auto py-8 px-4">
+                {error && (
+                    <div className="bg-red-100 text-red-700 p-3 rounded mb-4">{error}</div>
+                )}
+
+                {/* Botón nueva tarea */}
+                <div className="flex justify-between items-center mb-6">
+                    <h2 className="text-2xl font-bold text-gray-800">Mis tareas</h2>
+                    <button
+                        onClick={() => setShowForm(!showForm)}
+                        className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+                    >
+                        {showForm ? 'Cancelar' : '+ Nueva tarea'}
+                    </button>
+                </div>
+
+                {/* Formulario nueva tarea */}
+                {showForm && (
+                    <form onSubmit={handleCreateTask} className="bg-white p-6 rounded-lg shadow-md mb-6">
+                        <div className="mb-4">
+                            <label className="block text-gray-700 mb-2">Título</label>
+                            <input
+                                type="text"
+                                value={newTask.title}
+                                onChange={(e) => setNewTask({ ...newTask, title: e.target.value })}
+                                className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:border-blue-500"
+                                required
+                            />
+                        </div>
+                        <div className="mb-4">
+                            <label className="block text-gray-700 mb-2">Descripción</label>
+                            <textarea
+                                value={newTask.description}
+                                onChange={(e) => setNewTask({ ...newTask, description: e.target.value })}
+                                className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:border-blue-500"
+                                rows="3"
+                            />
+                        </div>
+                        <div className="mb-4">
+                            <label className="block text-gray-700 mb-2">Prioridad</label>
+                            <select
+                                value={newTask.priority}
+                                onChange={(e) => setNewTask({ ...newTask, priority: e.target.value })}
+                                className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:border-blue-500"
+                            >
+                                <option value="LOW">Baja</option>
+                                <option value="MEDIUM">Media</option>
+                                <option value="HIGH">Alta</option>
+                            </select>
+                        </div>
+                        <button
+                            type="submit"
+                            className="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600"
+                        >
+                            Crear tarea
+                        </button>
+                    </form>
+                )}
+
+                {/* Lista de tareas */}
+                {loading ? (
+                    <p className="text-center text-gray-500">Cargando tareas...</p>
+                ) : tasks.length === 0 ? (
+                    <p className="text-center text-gray-500">No tienes tareas aún. ¡Crea una!</p>
+                ) : (
+                    <div className="space-y-4">
+                        {tasks.map(task => (
+                            <div key={task.id} className="bg-white p-5 rounded-lg shadow-md">
+                                <div className="flex justify-between items-start">
+                                    <div>
+                                        <h3 className="font-semibold text-gray-800">{task.title}</h3>
+                                        {task.description && (
+                                            <p className="text-gray-500 text-sm mt-1">{task.description}</p>
+                                        )}
+                                        <div className="flex gap-2 mt-2">
+                                            <span className={`text-xs px-2 py-1 rounded-full ${statusColor[task.status]}`}>
+                                                {statusLabel[task.status]}
+                                            </span>
+                                            <span className={`text-xs px-2 py-1 rounded-full ${priorityColor[task.priority]}`}>
+                                                {task.priority}
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div className="flex gap-2">
+                                        <button
+                                            onClick={() => handleStatusChange(task)}
+                                            className="text-sm text-blue-500 hover:underline"
+                                        >
+                                            Cambiar estado
+                                        </button>
+                                        <button
+                                            onClick={() => handleDeleteTask(task.id)}
+                                            className="text-sm text-red-500 hover:underline"
+                                        >
+                                            Eliminar
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                )}
+            </div>
+        </div>
+    )
+}
+
+export default Dashboard
