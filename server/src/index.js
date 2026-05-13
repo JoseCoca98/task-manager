@@ -1,6 +1,7 @@
 const express = require('express')
 const cors = require('cors')
 const authRoutes = require('./routes/authRoutes')
+const taskRoutes = require('./routes/taskRoutes')
 
 
 const app = express()
@@ -12,6 +13,7 @@ app.use(express.json())
 
 // Rutas
 app.use('/auth', authRoutes)
+app.use('/tasks', taskRoutes)
 
 // Ruta de prueba
 app.get('/', (req, res) => {
