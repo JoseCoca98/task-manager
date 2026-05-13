@@ -11,6 +11,15 @@ function Dashboard() {
     const [showForm, setShowForm] = useState(false)
     const [filters, setFilters] = useState({ status: 'ALL', priority: 'ALL' })
     const [editingTask, setEditingTask] = useState(null)
+    const [darkMode, setDarkMode] = useState(false)
+
+    useEffect(() => {
+        if (darkMode) {
+            document.documentElement.classList.add('dark')
+        } else {
+            document.documentElement.classList.remove('dark')
+        }
+    }, [darkMode])
 
     useEffect(() => {
         fetchTasks()
@@ -106,26 +115,59 @@ function Dashboard() {
     })
 
     return (
-        <div className="min-h-screen bg-gray-100">
+        <div className="min-h-screen bg-gray-100 dark:bg-gray-900">
+
             {/* Navbar */}
-            <nav className="bg-white shadow px-6 py-4 flex justify-between items-center">
-                <h1 className="text-xl font-bold text-gray-800">📝 Task Manager</h1>
-                <button
-                    onClick={handleLogout}
-                    className="text-gray-600 hover:text-red-500"
-                >
-                    Cerrar sesión
-                </button>
+            <nav className="bg-white dark:bg-gray-800 shadow px-6 py-4 flex justify-between items-center">
+                <h1 className="text-xl font-bold text-gray-800 dark:text-white">📝 Task Manager</h1>
+                <div className="flex items-center gap-4">
+                    <button
+                        onClick={() => setDarkMode(!darkMode)}
+                        className="text-gray-600 dark:text-gray-300 hover:text-gray-900"
+                    >
+                        {darkMode ? '☀️' : '🌙'}
+                    </button>
+                    <button
+                        onClick={handleLogout}
+                        className="text-gray-600 dark:text-gray-300 hover:text-red-500"
+                    >
+                        Cerrar sesión
+                    </button>
+                </div>
             </nav>
+
+            {/* Stats */}
+            <div className="bg-white dark:bg-gray-800 border-b dark:border-gray-700 px-6 py-4">
+                <div className="max-w-3xl mx-auto grid grid-cols-3 gap-4">
+                    <div className="text-center">
+                        <p className="text-2xl font-bold text-yellow-500">
+                            {tasks.filter(t => t.status === 'PENDING').length}
+                        </p>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">Pendientes</p>
+                    </div>
+                    <div className="text-center">
+                        <p className="text-2xl font-bold text-blue-500">
+                            {tasks.filter(t => t.status === 'IN_PROGRESS').length}
+                        </p>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">En progreso</p>
+                    </div>
+                    <div className="text-center">
+                        <p className="text-2xl font-bold text-green-500">
+                            {tasks.filter(t => t.status === 'COMPLETED').length}
+                        </p>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">Completadas</p>
+                    </div>
+                </div>
+            </div>
 
             <div className="max-w-3xl mx-auto py-8 px-4">
                 {error && (
-                    <div className="bg-red-100 text-red-700 p-3 rounded mb-4">{error}</div>
+                    <div className="bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300 p-3 rounded mb-4">{error}</div>
                 )}
 
                 {/* Botón nueva tarea */}
                 <div className="flex justify-between items-center mb-6">
-                    <h2 className="text-2xl font-bold text-gray-800">Mis tareas</h2>
+                    <h2 className="text-2xl font-bold text-gray-800 dark:text-white">Mis tareas</h2>
                     <button
                         onClick={() => setShowForm(!showForm)}
                         className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
@@ -133,12 +175,13 @@ function Dashboard() {
                         {showForm ? 'Cancelar' : '+ Nueva tarea'}
                     </button>
                 </div>
+
                 {/* Filtros */}
                 <div className="flex gap-3 mb-6">
                     <select
                         value={filters.status}
                         onChange={(e) => setFilters({ ...filters, status: e.target.value })}
-                        className="border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-blue-500"
+                        className="border border-gray-300 dark:border-gray-600 rounded px-3 py-2 text-sm focus:outline-none focus:border-blue-500 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300"
                     >
                         <option value="ALL">Todos los estados</option>
                         <option value="PENDING">Pendiente</option>
@@ -149,7 +192,7 @@ function Dashboard() {
                     <select
                         value={filters.priority}
                         onChange={(e) => setFilters({ ...filters, priority: e.target.value })}
-                        className="border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-blue-500"
+                        className="border border-gray-300 dark:border-gray-600 rounded px-3 py-2 text-sm focus:outline-none focus:border-blue-500 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300"
                     >
                         <option value="ALL">Todas las prioridades</option>
                         <option value="LOW">Baja</option>
@@ -157,34 +200,35 @@ function Dashboard() {
                         <option value="HIGH">Alta</option>
                     </select>
                 </div>
+
                 {/* Formulario nueva tarea */}
                 {showForm && (
-                    <form onSubmit={handleCreateTask} className="bg-white p-6 rounded-lg shadow-md mb-6">
+                    <form onSubmit={handleCreateTask} className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md mb-6">
                         <div className="mb-4">
-                            <label className="block text-gray-700 mb-2">Título</label>
+                            <label className="block text-gray-700 dark:text-gray-300 mb-2">Título</label>
                             <input
                                 type="text"
                                 value={newTask.title}
                                 onChange={(e) => setNewTask({ ...newTask, title: e.target.value })}
-                                className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:border-blue-500"
+                                className="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded px-3 py-2 focus:outline-none focus:border-blue-500"
                                 required
                             />
                         </div>
                         <div className="mb-4">
-                            <label className="block text-gray-700 mb-2">Descripción</label>
+                            <label className="block text-gray-700 dark:text-gray-300 mb-2">Descripción</label>
                             <textarea
                                 value={newTask.description}
                                 onChange={(e) => setNewTask({ ...newTask, description: e.target.value })}
-                                className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:border-blue-500"
+                                className="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded px-3 py-2 focus:outline-none focus:border-blue-500"
                                 rows="3"
                             />
                         </div>
                         <div className="mb-4">
-                            <label className="block text-gray-700 mb-2">Prioridad</label>
+                            <label className="block text-gray-700 dark:text-gray-300 mb-2">Prioridad</label>
                             <select
                                 value={newTask.priority}
                                 onChange={(e) => setNewTask({ ...newTask, priority: e.target.value })}
-                                className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:border-blue-500"
+                                className="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded px-3 py-2 focus:outline-none focus:border-blue-500"
                             >
                                 <option value="LOW">Baja</option>
                                 <option value="MEDIUM">Media</option>
@@ -192,12 +236,12 @@ function Dashboard() {
                             </select>
                         </div>
                         <div className="mb-4">
-                            <label className="block text-gray-700 mb-2">Fecha límite (opcional)</label>
+                            <label className="block text-gray-700 dark:text-gray-300 mb-2">Fecha límite (opcional)</label>
                             <input
                                 type="date"
                                 value={newTask.dueDate}
                                 onChange={(e) => setNewTask({ ...newTask, dueDate: e.target.value })}
-                                className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:border-blue-500"
+                                className="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded px-3 py-2 focus:outline-none focus:border-blue-500"
                             />
                         </div>
                         <button
@@ -209,34 +253,35 @@ function Dashboard() {
                     </form>
                 )}
 
+                {/* Formulario edición */}
                 {editingTask && (
-                    <form onSubmit={handleEditTask} className="bg-white p-6 rounded-lg shadow-md mb-6 border-l-4 border-blue-500">
-                        <h3 className="font-semibold text-gray-800 mb-4">Editando tarea</h3>
+                    <form onSubmit={handleEditTask} className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md mb-6 border-l-4 border-blue-500">
+                        <h3 className="font-semibold text-gray-800 dark:text-white mb-4">Editando tarea</h3>
                         <div className="mb-4">
-                            <label className="block text-gray-700 mb-2">Título</label>
+                            <label className="block text-gray-700 dark:text-gray-300 mb-2">Título</label>
                             <input
                                 type="text"
                                 value={editingTask.title}
                                 onChange={(e) => setEditingTask({ ...editingTask, title: e.target.value })}
-                                className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:border-blue-500"
+                                className="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded px-3 py-2 focus:outline-none focus:border-blue-500"
                                 required
                             />
                         </div>
                         <div className="mb-4">
-                            <label className="block text-gray-700 mb-2">Descripción</label>
+                            <label className="block text-gray-700 dark:text-gray-300 mb-2">Descripción</label>
                             <textarea
                                 value={editingTask.description || ''}
                                 onChange={(e) => setEditingTask({ ...editingTask, description: e.target.value })}
-                                className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:border-blue-500"
+                                className="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded px-3 py-2 focus:outline-none focus:border-blue-500"
                                 rows="3"
                             />
                         </div>
                         <div className="mb-4">
-                            <label className="block text-gray-700 mb-2">Prioridad</label>
+                            <label className="block text-gray-700 dark:text-gray-300 mb-2">Prioridad</label>
                             <select
                                 value={editingTask.priority}
                                 onChange={(e) => setEditingTask({ ...editingTask, priority: e.target.value })}
-                                className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:border-blue-500"
+                                className="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded px-3 py-2 focus:outline-none focus:border-blue-500"
                             >
                                 <option value="LOW">Baja</option>
                                 <option value="MEDIUM">Media</option>
@@ -244,12 +289,12 @@ function Dashboard() {
                             </select>
                         </div>
                         <div className="mb-4">
-                            <label className="block text-gray-700 mb-2">Fecha límite</label>
+                            <label className="block text-gray-700 dark:text-gray-300 mb-2">Fecha límite</label>
                             <input
                                 type="date"
                                 value={editingTask.dueDate ? editingTask.dueDate.split('T')[0] : ''}
                                 onChange={(e) => setEditingTask({ ...editingTask, dueDate: e.target.value })}
-                                className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:border-blue-500"
+                                className="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded px-3 py-2 focus:outline-none focus:border-blue-500"
                             />
                         </div>
                         <div className="flex gap-3">
@@ -262,7 +307,7 @@ function Dashboard() {
                             <button
                                 type="button"
                                 onClick={() => setEditingTask(null)}
-                                className="flex-1 bg-gray-200 text-gray-700 py-2 rounded hover:bg-gray-300"
+                                className="flex-1 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 py-2 rounded hover:bg-gray-300"
                             >
                                 Cancelar
                             </button>
@@ -272,18 +317,18 @@ function Dashboard() {
 
                 {/* Lista de tareas */}
                 {loading ? (
-                    <p className="text-center text-gray-500">Cargando tareas...</p>
+                    <p className="text-center text-gray-500 dark:text-gray-400">Cargando tareas...</p>
                 ) : tasks.length === 0 ? (
-                    <p className="text-center text-gray-500">No tienes tareas aún. ¡Crea una!</p>
+                    <p className="text-center text-gray-500 dark:text-gray-400">No tienes tareas aún. ¡Crea una!</p>
                 ) : (
                     <div className="space-y-4">
                         {filteredTasks.map(task => (
-                            <div key={task.id} className="bg-white p-5 rounded-lg shadow-md">
+                            <div key={task.id} className="bg-white dark:bg-gray-800 p-5 rounded-lg shadow-md">
                                 <div className="flex justify-between items-start">
                                     <div>
-                                        <h3 className="font-semibold text-gray-800">{task.title}</h3>
+                                        <h3 className="font-semibold text-gray-800 dark:text-white">{task.title}</h3>
                                         {task.description && (
-                                            <p className="text-gray-500 text-sm mt-1">{task.description}</p>
+                                            <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">{task.description}</p>
                                         )}
                                         <div className="flex gap-2 mt-2">
                                             <span className={`text-xs px-2 py-1 rounded-full ${statusColor[task.status]}`}>
@@ -294,7 +339,7 @@ function Dashboard() {
                                             </span>
                                         </div>
                                         {task.dueDate && (
-                                            <p className="text-xs text-gray-400 mt-2">
+                                            <p className="text-xs text-gray-400 dark:text-gray-500 mt-2">
                                                 📅 {new Date(task.dueDate).toLocaleDateString('es-ES')}
                                             </p>
                                         )}
