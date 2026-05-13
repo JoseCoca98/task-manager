@@ -1,17 +1,23 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import api from '../services/api'
+import Notification from '../components/Notification'
 
 function Dashboard() {
     const navigate = useNavigate()
     const [tasks, setTasks] = useState([])
     const [loading, setLoading] = useState(true)
-    const [error, setError] = useState(null)
     const [newTask, setNewTask] = useState({ title: '', description: '', priority: 'MEDIUM', dueDate: '' })
     const [showForm, setShowForm] = useState(false)
     const [filters, setFilters] = useState({ status: 'ALL', priority: 'ALL' })
     const [editingTask, setEditingTask] = useState(null)
     const [darkMode, setDarkMode] = useState(false)
+    const [notification, setNotification] = useState(null)
+
+    const showNotification = (message, type = 'success') => {
+        setNotification({ message, type })
+        setTimeout(() => setNotification(null), 3000)
+    }
 
     useEffect(() => {
         if (darkMode) {
@@ -30,7 +36,7 @@ function Dashboard() {
             const response = await api.get('/tasks')
             setTasks(response.data)
         } catch (err) {
-            setError('Error al cargar las tareas')
+            showNotification('Error al cargar las tareas', 'error')
         } finally {
             setLoading(false)
         }
@@ -41,10 +47,11 @@ function Dashboard() {
         try {
             const response = await api.post('/tasks', newTask)
             setTasks([...tasks, response.data])
-            setNewTask({ title: '', description: '', priority: 'MEDIUM' })
+            setNewTask({ title: '', description: '', priority: 'MEDIUM', dueDate: '' })
             setShowForm(false)
+            showNotification('Tarea creada correctamente')
         } catch (err) {
-            setError('Error al crear la tarea')
+            showNotification('Error al crear la tarea', 'error')
         }
     }
 
@@ -61,7 +68,7 @@ function Dashboard() {
             })
             setTasks(tasks.map(t => t.id === task.id ? response.data : t))
         } catch (err) {
-            setError('Error al actualizar la tarea')
+            showNotification('Error al actualizar la tarea', 'error')
         }
     }
 
@@ -69,8 +76,9 @@ function Dashboard() {
         try {
             await api.delete(`/tasks/${id}`)
             setTasks(tasks.filter(t => t.id !== id))
+            showNotification('Tarea eliminada correctamente', 'info')
         } catch (err) {
-            setError('Error al eliminar la tarea')
+            showNotification('Error al eliminar la tarea', 'error')
         }
     }
 
@@ -80,8 +88,9 @@ function Dashboard() {
             const response = await api.put(`/tasks/${editingTask.id}`, editingTask)
             setTasks(tasks.map(t => t.id === editingTask.id ? response.data : t))
             setEditingTask(null)
+            showNotification('Tarea actualizada correctamente')
         } catch (err) {
-            setError('Error al editar la tarea')
+            showNotification('Error al editar la tarea', 'error')
         }
     }
 
@@ -161,9 +170,6 @@ function Dashboard() {
             </div>
 
             <div className="max-w-3xl mx-auto py-8 px-4">
-                {error && (
-                    <div className="bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300 p-3 rounded mb-4">{error}</div>
-                )}
 
                 {/* Botón nueva tarea */}
                 <div className="flex justify-between items-center mb-6">
@@ -370,6 +376,10 @@ function Dashboard() {
                     </div>
                 )}
             </div>
+            <Notification
+                message={notification?.message}
+                type={notification?.type}
+            />
         </div>
     )
 }
