@@ -65,6 +65,7 @@ task-manager/
 │       ├── middleware/       → JWT authentication
 │       └── routes/           → API endpoints
 ├── .gitignore
+├── LICENSE
 └── README.md
 ```
 
