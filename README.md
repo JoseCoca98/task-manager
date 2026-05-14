@@ -49,6 +49,7 @@ A full-stack task management application built with React, Node.js, Express, and
 
 ## 📁 Project Structure
 
+```
 task-manager/
 ├── client/                   → React frontend
 │   └── src/
@@ -65,6 +66,7 @@ task-manager/
 │       └── routes/           → API endpoints
 ├── .gitignore
 └── README.md
+```
 
 ---
 
